@@ -4,10 +4,6 @@
             "format": "md"
         }
     },
-    "routes": [
-        {"uri": "posts"},
-        {"uri": "posts/{id}"}
-    ],
     "fields": [
         {
             "handle": "id",

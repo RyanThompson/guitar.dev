@@ -95,55 +95,11 @@
 
 @php
 
-    $noteFromInterval = function($note, $interval) {
+    $key = strtoupper(Request::get('key', 'G'));
 
-        $notes = ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#'];
-
-        $position = array_search($note, $notes);
-
-        $target = ($position + $interval) % 12;
-
-        return $notes[$target];
-    };
-
-    $notesFromKey = function($root) use ($noteFromInterval) {
-
-        $notes = ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#'];
-        
-        $scale = [2, 2, 1, 2, 2, 2];
-
-        $position = array_search($root, $notes);
-
-        $key[] = $note = $root;
-
-        foreach ($scale as $interval) {
-            $key[] = $note = $noteFromInterval($note, $interval);
-        }
-
-        return $key;
-    };
-
-    $noteFromDegree = function($note, $degree, $key) use ($notesFromKey) {
-
-        $notes = $notesFromKey($key);
-
-        $position = array_search($note, $notes);
-
-        $target = ($position + $degree) % 7;
-
-        return $notes[$target];
-    };
-
-    $degreeOfScale = function($note, $key) use ($notesFromKey) {
-
-        $degree = array_search($note, $notesFromKey($key));
-
-        if ($degree === false) {
-            return null;
-        }
-
-        return $degree + 1;
-    };
+    $theory = new App\Theory\Theory([
+        'key' => $key,
+    ]);
 
     $ordinalSuffix = function ($n)
     {
@@ -159,16 +115,13 @@
         'E'
     ];
 
-    $key = strtoupper(Request::get('key', 'G'));
-
     $root = strtoupper(Request::get('root', $key));
-    $rootDegree = $degreeOfScale($root, $key);
     
     $chord = strtolower(Request::get('chord', 'maj'));
     
-    $notes = $notesFromKey($key);
+    $notes = $theory->scale($key);
 
-    $frets = Request::get('frets', 5);
+    $frets = Request::get('frets', 15);
 
     $chords = [
         'maj' => [1, 3, 5],
@@ -177,8 +130,8 @@
 
     $chord = Arr::get($chords, $chord, []);
 
-    $chordNotes = array_map(function($degree) use ($root, $key, $noteFromDegree) {
-        return $noteFromDegree($root, $degree - 1, $key);
+    $chordNotes = array_map(function($degree) use ($root, $key, $theory) {
+        return $theory->next($root, $degree - 1);
     }, $chord);
 
 @endphp
@@ -187,8 +140,8 @@
     <li><strong>Key:</strong> {{ $key }}</li>
     <li><strong>Notes:</strong> {{ implode(', ', $notes) }}</li>
     @if ($chord)
-    <li><strong>Chord:</strong> {{ implode(', ', array_map(function($degree) use ($noteFromDegree, $key, $root) {
-        return $noteFromDegree($root, $degree - 1, $key) . " (" . $degree . ") ";
+    <li><strong>Chord:</strong> {{ implode(', ', array_map(function($degree) use ($theory, $key, $root) {
+        return $theory->next($root, $degree - 1) . " (" . $degree . ") ";
     }, $chord)) }}</li>
     @endif
 </ul>
@@ -198,8 +151,8 @@
     <div class="fretboard__string" data-string="{{ $strings[$string] }}">
         @for ($fret = 0; $fret < $frets; $fret++)    
         @php
-            $note = $noteFromInterval($strings[$string], $fret);
-            $degree = $degreeOfScale($note, $key);
+            $note = $theory->note($strings[$string], $fret);
+            $degree = $theory->degree($note);
         @endphp
         <div class="
             fretboard__note
