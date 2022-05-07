@@ -1,0 +1,59 @@
+{
+    "config": {
+        "source": {
+            "format": "md"
+        }
+    },
+    "routes": [
+        {"uri": "posts"},
+        {"uri": "posts/{id}"}
+    ],
+    "fields": [
+        {
+            "handle": "id",
+            "type": "slug",
+            "unique": true
+        },
+        {
+            "handle": "title",
+            "type": "string"
+        },
+        {
+            "handle": "body",
+            "type": "markdown"
+        }
+    ],
+    "ui": {
+        "tables": [
+            {
+                "handle": "default",
+                "columns": [
+                    {"handle": "id"},
+                    {"handle": "title"}
+                ],
+                "buttons": [
+                    {"handle": "edit"},
+                    {
+                        "text": "Code",
+                        "handle": "code",
+                        "attributes": {
+                            "href": "vscode://file{app.base_path}/streams/data/posts/{entry.id}.md",
+                            "class": ["a-button", "-red"]
+                        }
+                    },
+                    {
+                        "handle": "view",
+                        "classes": [
+                            "a-button",
+                            "-secondary"
+                        ],
+                        "attributes": {
+                            "href": "/posts/{entry.id}",
+                            "target": "_blank"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
