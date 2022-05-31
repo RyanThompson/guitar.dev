@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Theory\FretboardComponent;
+use App\Theory\TABComponent;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Streams\Ui\Support\Facades\UI;
@@ -45,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        UI::register('tab', TABComponent::class);
         UI::register('fretboard', FretboardComponent::class);
     }
 }

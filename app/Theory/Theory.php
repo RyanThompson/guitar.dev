@@ -14,6 +14,8 @@ class Theory
 
     public array $notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
 
+    public array $intervals = ['perfect_unison', 'minor_second', 'major_second', 'minor_third', 'major_third', 'perfect_fourth', 'perfect_fifth', 'major_sixth', 'minor_seventh', 'major_seventh', 'perfect_octave'];
+
     public function __construct(array $attributes = [])
     {
         $this->constructPrototype($attributes);

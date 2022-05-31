@@ -20,7 +20,6 @@
         "blade-ui-kit/blade-icons": "^0.5",
         "maartenpaauw/undraw": "^1.0",
         "streams/core": "^2.0",
-        "streams/api": "^1.0",
         "streams/ui": "^1.0"
     },
     "require-dev": {
@@ -33,6 +32,22 @@
         "phpunit/phpunit": "^9.0",
         "laravel/tinker": "^2.2"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "addons/streams-core",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "addons/streams-ui",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "autoload": {
         "psr-4": {
             "App\\": "app/"
