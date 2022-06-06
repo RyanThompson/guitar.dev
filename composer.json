@@ -32,22 +32,6 @@
         "phpunit/phpunit": "^9.0",
         "laravel/tinker": "^2.2"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "addons/streams-core",
-            "options": {
-                "symlink": true
-            }
-        },
-        {
-            "type": "path",
-            "url": "addons/streams-ui",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
     "autoload": {
         "psr-4": {
             "App\\": "app/"
