@@ -3,13 +3,19 @@
 
     .tab__string {
         display: flex;
-        margin-top: 30px;
-        height: 6em;
         background: #ccc;
     }
 
     .tab__note {
-        width: calc(100% / 15);
+        width: 30px;
+    }
+
+    .tab__note:first-child {
+        border-left: 5px solid #333333;
+    }
+
+    .tab__note--root {
+        background: #fff555;
     }
 
     /* .tab__note--fret::after,
@@ -43,50 +49,38 @@
 
 @php
 
-$key = strtoupper(Request::get('key', 'G'));
+    // $ordinalSuffix = function ($n) {
+    //     return date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
+    // };
+    
+    $strings = [
+        'E',
+        'B',
+        'G',
+        'D',
+        'A',
+        'E'
+    ];
 
-$theory = new App\Theory\Theory([
-'key' => $key,
-]);
+    $scale = Request::get('scale');
+    
+    $frets = Request::get('frets', 15);
 
-$ordinalSuffix = function ($n)
-{
-return date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
-};
+    $key = strtoupper(Request::get('key', 'C'));
+    $root = strtoupper(Request::get('root', $key));
 
-$strings = [
-'E',
-'B',
-'G',
-'D',
-'A',
-'E'
-];
+    $chord = strtolower(Request::get('chord', 'major_triad'));
+    
+    $theory = new App\Theory\Theory($key);
 
-$root = strtoupper(Request::get('root', $key));
-
-$chord = strtolower(Request::get('chord', 'maj'));
-
-$notes = $theory->scale($key);
-
-$frets = Request::get('frets', 15);
-
-$chords = [
-'maj' => [1, 3, 5],
-'maj7' => [1, 3, 5, 7],
-];
-
-$chord = Arr::get($chords, $chord, []);
-
-$chordNotes = array_map(function($degree) use ($root, $key, $theory) {
-return $theory->next($root, $degree - 1);
-}, $chord);
+    $notes = $theory->scale($scale);
+    $chord = $theory->chord($chord);
 
 @endphp
 <div class="tab">
     @for ($string = 0; $string < count($strings); $string++) <div class="tab__string"
         data-string="{{ $strings[$string] }}">
-        @for ($fret = 0; $fret < $frets; $fret++) @php $note=$theory->note($strings[$string], $fret);
+        @for ($fret = 0; $fret < $frets; $fret++) @php $note=$theory->note($fret, $strings[$string]);
             $degree = $theory->degree($note);
             @endphp
             <div class="
@@ -94,9 +88,9 @@ return $theory->next($root, $degree - 1);
             {{ !$fret ? 'tab__note--open' : null }}
             {{ $note === $root ? 'tab__note--root' : null }}
             {{ in_array($note, $notes) ? 'tab__note--key' : null }}
-            {{ in_array($note, $chordNotes) ? 'tab__note--fret' : null }}
+            {{ in_array($note, $chord) ? 'tab__note--fret' : null }}
             " data-note="{{ $note }}">
-                @if (in_array($note, $chordNotes))
+                @if (in_array($note, $chord))
                 {{ $fret }}
                 @else
                 -

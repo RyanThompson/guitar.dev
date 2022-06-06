@@ -46,7 +46,6 @@
     }
 
     .fretboard__note--key::before {
-        opacity: 0.25;
         width: 2.5rem;
         height: 2.5rem;
         border: 2px solid #0000ff;
@@ -60,12 +59,15 @@
         border: 2px solid #007606;
     }
 
-    .fretboard__note--root::after {
+    .fretboard__note--root::before {
         opacity: 1;
         width: 2rem;
         height: 2rem;
         margin-left: .25rem;
-        background: #c8ffca;
+        background: green;
+    }
+    .fretboard__note--root span {
+        color: white !important;
     }
 
     .fretboard__note--open::before,
@@ -95,17 +97,10 @@
 
 @php
 
-    $key = strtoupper(Request::get('key', 'G'));
-
-    $theory = new App\Theory\Theory([
-        'key' => $key,
-    ]);
-
-    $ordinalSuffix = function ($n)
-    {
-        return date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
-    };
-
+    // $ordinalSuffix = function ($n) {
+    //     return date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
+    // };
+    
     $strings = [
         'E',
         'B',
@@ -115,51 +110,37 @@
         'E'
     ];
 
-    $root = strtoupper(Request::get('root', $key));
+    $scale = $fretboard->scale;
+    dump("Scale:" . $scale);
+    $frets = $fretboard->frets;
+    dump("Frets:" . $frets);
+    $root = $fretboard->root;
+    dump("Root:" . $root);
+
+    $chord = $fretboard->chord;
     
-    $chord = strtolower(Request::get('chord', 'maj'));
-    
-    $notes = $theory->scale($key);
+    $theory = new App\Theory\Theory($root);
 
-    $frets = Request::get('frets', 15);
-
-    $chords = [
-        'maj' => [1, 3, 5],
-        'maj7' => [1, 3, 5, 7],
-    ];
-
-    $chord = Arr::get($chords, $chord, []);
-
-    $chordNotes = array_map(function($degree) use ($root, $key, $theory) {
-        return $theory->next($root, $degree - 1);
-    }, $chord);
+    $notes = $theory->scale($scale);
+    $chord = $chord ? $theory->chord($chord) : [];
+    dump("Chord:" . json_encode($chord));
 
 @endphp
-
-<ul  style="margin-bottom: 2rem;">
-    <li><strong>Key:</strong> {{ $key }}</li>
-    <li><strong>Notes:</strong> {{ implode(', ', $notes) }}</li>
-    @if ($chord)
-    <li><strong>Chord:</strong> {{ implode(', ', array_map(function($degree) use ($theory, $key, $root) {
-        return $theory->next($root, $degree - 1) . " (" . $degree . ") ";
-    }, $chord)) }}</li>
-    @endif
-</ul>
 
 <div class="fretboard">
     @for ($string = 0; $string < count($strings); $string++)
     <div class="fretboard__string" data-string="{{ $strings[$string] }}">
-        @for ($fret = 0; $fret < $frets; $fret++)    
+        @for ($fret = 0; $fret < $frets; $fret++)   
         @php
-            $note = $theory->note($strings[$string], $fret);
+            $note = $theory->note($fret, $strings[$string]);
             $degree = $theory->degree($note);
-        @endphp
+        @endphp 
         <div class="
             fretboard__note
             {{ !$fret ? 'fretboard__note--open' : null }}
             {{ $note === $root ? 'fretboard__note--root' : null }}
             {{ in_array($note, $notes) ? 'fretboard__note--key' : null }}
-            {{ in_array($note, $chordNotes) ? 'fretboard__note--fret' : null }}
+            {{ in_array($note, $chord) ? 'fretboard__note--fret' : null }}
             " data-note="{{ $note }}"><span>{{ $note }} {{ $degree ? "(" . $degree .  ")" : null }}</span></div>
         @endfor
     </div>    
